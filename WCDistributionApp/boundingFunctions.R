@@ -55,7 +55,7 @@ wc_plot <- function(S, M){
     geom_point() + 
     geom_line(color="blue") +
     ylab("(%) Improvement") +
-    xlab("Coefficient of Deviation") + 
+    xlab("Market Heterogeneity (Coeff. of Deviation)") + 
     scale_y_continuous(labels=scales::percent) + 
     theme_bw(base_size=18)   +
     geom_vline(xintercept = delta_L(S, M),
@@ -88,10 +88,7 @@ ccdf_med <- function(S, M, D){
   tibble(supp=supp, 
          vals = map_dbl(supp, Fbar)) %>%
     ggplot(aes(supp, vals)) + 
-    geom_line() +
-    theme_bw(base_size=18) + 
-    xlab("x") + ylab("Fbar(x)") + 
-    ylim(0, 1)
+    geom_line() 
 }
 
 ccdf_high<- function(S, M, D){
@@ -112,10 +109,7 @@ ccdf_high<- function(S, M, D){
   tibble(supp=supp, 
          vals = map_dbl(supp, Fbar)) %>%
     ggplot(aes(supp, vals)) + 
-    geom_line(color="red") +
-    theme_bw(base_size=18) + 
-    xlab("x") + ylab("Fbar(x)") + 
-    ylim(0, 1)
+    geom_line(color="red") 
 }
 
 ccdf_low <- function(S, M, D){
@@ -132,20 +126,20 @@ ccdf_low <- function(S, M, D){
   tibble(supp=supp, 
          vals = map_dbl(supp, Fbar)) %>%
     ggplot(aes(supp, vals)) + 
-    geom_line(color="blue") +
-    theme_bw(base_size=18) + 
-    xlab("x") + ylab("Fbar(x)") + 
-    ylim(0, 1)
+    geom_line(color="blue") 
 }
 
 ccdf_plot <- function(S, M, D){
   #D must be positive and less than DeltaH
   if(D < delta_L(S, M)){
-    return( ccdf_low(S, M, D) )
+    g <- ccdf_low(S, M, D)
   }  else if( D < delta_M(S, M) ){
-    return ( ccdf_med(S, M, D)  )
+    g <- ccdf_med(S, M, D)
   } else {
-    return ( ccdf_high(S, M, D))
+    g <- ccdf_high(S, M, D)
   }
-  return(NULL)
+  g + 
+    theme_bw(base_size=18) +
+    xlab("Price (p)") + ylab("(%) Market willing to buy at p") +
+    ylim(0, 1)
 }

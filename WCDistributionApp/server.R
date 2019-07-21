@@ -20,7 +20,7 @@ shinyServer(function(input, output) {
   
   #VG Change this to non-reactive?
   max_B_rounded <- reactive({
-    round(delta_H(params()$S, params()$M) * 2 * input$mu, 2)
+    floor(100 * delta_H(params()$S, params()$M) * 2 * input$mu) / 100
   })
 
   #The actual UI elements  
@@ -45,7 +45,7 @@ shinyServer(function(input, output) {
     ##Do some light validation on values.  
     
     
-    sliderInput("B", "Valuation Heterogeneity\n (Mean Abs. Deviation)", 
+    sliderInput("B", "Mean Abs. Deviation", 
                 min = 0,
                 max = max_B_rounded(), 
                 val = ifelse(input$B > max_B_rounded(), 
