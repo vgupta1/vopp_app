@@ -12,8 +12,8 @@ shinyServer(function(input, output) {
   # Reactive objects build from user inputs
   params <- reactive({
     validate(
-      need(input$c < input$mu && input$mu < input$vmax && input$c == 0,
-           "Please specify c < mu < vmax.  Currently Tight Distributions require c = 0")
+      need(input$c < input$mu && input$mu < input$vmax && input$c >= 0,
+           "Please specify 0 < vmin < mu < vmax.")
     )
     make_unitless(input$c, input$mu, input$vmax)  
   })
@@ -29,23 +29,23 @@ shinyServer(function(input, output) {
 
       #Change this so you're not invoking twice?
       #Does params even need to be reactive?
-      wc_plot(params()$S, params()$M) + 
-        geom_vline(xintercept = D,
+      wc_plot(params()$S, params()$M, params()$mu) + 
+        geom_vline(xintercept = input$B,
                  color="blue") +
-        geom_point(x=D, y=wc_bound(params()$S, params()$M, D) - 1, 
+        geom_point(x=input$B, y=wc_bound(params()$S, params()$M, D) - 1, 
                    fill="red", size=5, color="red")
   })
 
   output$ccdfPlot <- renderPlot({
     D <- input$B/2/input$mu
-    ccdf_plot(params()$S, params()$M, D)
+    ccdf_plot(params()$S, params()$M, D, input$mu)
       })
 
   output$outBSlider <- renderUI({
     ##Do some light validation on values.  
     
     
-    sliderInput("B", "Mean Abs. Deviation", 
+    sliderInput("B", "Market Hetereogeneity / Mean Abs. Deviation", 
                 min = 0,
                 max = max_B_rounded(), 
                 val = ifelse(input$B > max_B_rounded(), 
