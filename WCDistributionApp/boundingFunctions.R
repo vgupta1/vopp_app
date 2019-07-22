@@ -24,8 +24,6 @@ delta_H <- function(S, M){
   (S - 1)/ratio
 }
 
-#Do this the lazy way for now and do not worry about vectorization
-## Assumes that validation ensures D is not negative and <= DeltaH
 wc_bound <-function(S, M, D){
   #D must be positive and less than DeltaH
   if(D < delta_L(S, M)){
@@ -66,12 +64,11 @@ wc_plot <- function(S, M, mu){
 
 #####
 #Tight CCDF Constructions
-# For now constructed on unitless scale...
 #####
-ccdf_med <- function(S, M, D, mu){
+#returns a function for ccdf on unitless scale
+ccdf_med <- function(S, M, D){
   alpha_m <- 1/wc_bound(S, M, D)
   tstar = exp((alpha_m + D - 1)/alpha_m)
-  supp = seq(0, S, length.out=1000)
   Fbar <- function(x){
     if(x <= 0){
       return(1)
@@ -81,23 +78,12 @@ ccdf_med <- function(S, M, D, mu){
       return (alpha_m / x)
     }
     return (0)
-    
   }  #ends FBAR
-  
-  #To convert back to normal space
-  c = mu * (1-M)
-  
-  tibble(supp=supp, 
-         supp_dollars= supp * mu + c, 
-         vals = map_dbl(supp, Fbar)) %>%
-  ggplot(aes(supp_dollars, vals)) + 
-  geom_line() 
+  return(Fbar)
 }
 
-ccdf_high<- function(S, M, D, mu){
+ccdf_high<- function(S, M, D){
   alpha_H <- 1/wc_bound(S, M, D)
-  supp = seq(0, S, length.out=1000)
-  
   Fbar <- function(x){
     if( x <= 0 ){
       return (1.)
@@ -109,17 +95,11 @@ ccdf_high<- function(S, M, D, mu){
       return (0.)
     }
   } #ends Fbar
-  c = mu*(1-M)
-  tibble(supp=supp, 
-         supp_dollars = supp * mu + c,
-         vals = map_dbl(supp, Fbar)) %>%
-  ggplot(aes(supp_dollars, vals)) + 
-  geom_line(color="red") 
+  return(Fbar)
 }
 
-ccdf_low <- function(S, M, D, mu){
+ccdf_low <- function(S, M, D){
   alpha_L = 1/wc_bound(S, M, D)
-  supp = seq(0, S, length.out=1000)
   Fbar<- function(x){
     if (x < alpha_L){
       return (1)
@@ -128,24 +108,28 @@ ccdf_low <- function(S, M, D, mu){
     }
     return(0.)
   }# end fbar
-  c <- mu * (1-M)
-  tibble(supp=supp,
-         supp_dollars = supp * mu + c, 
-         vals = map_dbl(supp, Fbar)) %>%
-    ggplot(aes(supp_dollars, vals)) + 
-    geom_line(color="blue") 
+  return(Fbar)
 }
 
+#Plots things in the normal space
 ccdf_plot <- function(S, M, D, mu){
-  #D must be positive and less than DeltaH
+  c <- mu  * (1 - M)
+  
+  #obtain the ccdf based on D
   if(D < delta_L(S, M)){
-    g <- ccdf_low(S, M, D, mu)
+    ccdf <- ccdf_low(S, M, D)
   }  else if( D < delta_M(S, M) ){
-    g <- ccdf_med(S, M, D, mu)
+    ccdf <- ccdf_med(S, M, D)
   } else {
-    g <- ccdf_high(S, M, D, mu)
+    ccdf <- ccdf_high(S, M, D)
   }
-  g + 
+
+  #use it to plot something
+  tibble(supp=seq(0, S, length.out=1000), 
+         supp_dollars = supp * (mu-c) + c,
+         vals = map_dbl(supp, ccdf)) %>%
+    ggplot(aes(supp_dollars, vals)) + 
+    geom_line(color="red") + 
     theme_bw(base_size=18) +
     xlab("Price (p)") + ylab("(%) Willing to Buy at p") +
     ylim(0, 1)
