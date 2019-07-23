@@ -4,7 +4,7 @@ library(ggplot2)
 library(purrr)
 library(lamW)
 
-##Assume vmin = c for now?
+#Assume vmin = c throughout the code 
 make_unitless <- function(c, mu, vmax){
   return(tibble(S=vmax/mu, M= 1-c/mu, mu=mu))
 }
@@ -55,7 +55,7 @@ wc_plot <- function(S, M, mu){
     ylab("Improvement (%)") +
     xlab("Market Heterogeneity / Mean Abs. Deviation") + 
     scale_y_continuous(labels=scales::percent) + 
-    theme_bw(base_size=18)   +
+    theme_bw(base_size=16)   +
     geom_vline(xintercept = delta_L(S, M) * 2 * mu,
                linetype="dashed") +
     geom_vline(xintercept = delta_M(S, M) * 2 * mu,
@@ -130,7 +130,9 @@ ccdf_plot <- function(S, M, D, mu){
          vals = map_dbl(supp, ccdf)) %>%
     ggplot(aes(supp_dollars, vals)) + 
     geom_line(color="red") + 
-    theme_bw(base_size=18) +
+    annotate("text", x= S * (mu-c) + c, y = 1, label=paste("Mean Abs. Dev =", round(D * 2 * mu, 2)),
+             hjust="inward", size=5) +
+    theme_bw(base_size=16) +
     xlab("Price (p)") + ylab("(%) Willing to Buy at p") +
-    ylim(0, 1)
+    ylim(0, 1) 
 }
