@@ -1,14 +1,8 @@
-##The actual workhorse...
-# Rescale worst-case distributions to correct scale.  Account for $c$
-# Add an indicator of what regime we are in somewhere?
-
-#Remove the slider
-# Add instead a tool tip - Hover dispays message "Click to see cdf"
+## VG TO DO: 
 # Add special points to teh grid so you always see xmas tree points and deltas and end poitns
 
 
 source("boundingFunctions.R")
-
 library(shiny)
 
 shinyServer(function(input, output) {
